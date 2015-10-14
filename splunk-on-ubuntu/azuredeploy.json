@@ -84,6 +84,8 @@
     }
   },
   "variables": {
+    "vmName": "splunk-vm",
+    "vmExtensionName": "linuxChefExtension",
     "vmStorageAccountContainerName": "vhd",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
     "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet1Name'))]",
@@ -246,7 +248,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "myvm",
+      "name": "[variables('vmName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', 'nic')]",
@@ -257,7 +259,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computername": "myvm",
+          "computername": "[variables('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -271,7 +273,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://', parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/', 'myvm', '-osdisk.vhd')]"
+              "uri": "[concat('http://', parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',variables('vmName'), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -282,7 +284,7 @@
               "diskSizeGB": "[parameters('dataDiskSize')]",
               "lun": 0,
               "vhd": {
-                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/','myvm','dataDisk1' ,'.vhd')]"
+                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',variables('vmName'),'dataDisk1' ,'.vhd')]"
               },
               "caching": "None",
               "createOption": "Empty"
@@ -292,7 +294,7 @@
               "diskSizeGB": "[parameters('dataDiskSize')]",
               "lun": 1,
               "vhd": {
-                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/','myvm' ,'dataDisk2','.vhd')]"
+                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',variables('vmName'),'dataDisk2','.vhd')]"
               },
               "caching": "None",
               "createOption": "Empty"
@@ -310,11 +312,11 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat('myvm', '/azureVmUtils')]",
+          "name": "[concat(variables('vmName'), '-azureVmUtils')]",
           "apiVersion": "2015-06-15",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', 'myvm')]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
           ],
           "properties": {
             "publisher": "Microsoft.OSTCExtensions",
@@ -329,6 +331,30 @@
           }
         }
       ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'/', variables('vmExtensionName'))]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmName'), concat(variables('vmName'),'-azureVmUtils'))]"
+      ],
+      "properties": {
+        "publisher": "Chef.Bootstrap.WindowsAzure",
+        "type": "LinuxChefClient",
+        "typeHandlerVersion": "1210.12",
+        "settings": {
+          "client_rb": "local_mode true",
+          "runlist": "",
+          "bootstrap_options": {
+            "chef_node_name": "[variables('vmName')]",
+            "chef_server_url": "http://localhost",
+            "validation_client_name": "MyOrg"
+          }
+        }
+      }
     }
   ]
 }
