@@ -269,7 +269,7 @@
         "version": "latest"
       },
       "osImageContainer": "splunkcloud.blob.core.windows.net",
-      "osImageBlob": "system/Microsoft.Compute/Images/images/splunk-on-ubuntu-base-osDisk.abf364e8-1999-4f10-9c67-97b345d027b8.vhd",
+      "osImageBlob": "system/Microsoft.Compute/Images/images/splunk-on-ubuntu-base-osDisk.04c83a58-3d22-4a74-80d9-3c864825d5f2.vhd",
       "scripts": [
         "[concat(variables('templateBaseUrl'),'vm-disk-utils-0.1.sh')]",
         "[concat(variables('templateBaseUrl'),'node-setup.sh')]"
