@@ -235,7 +235,7 @@
             "value": "[variables('automationRunbookName')]"
           },
           "splunkTemplateUrl": {
-            "value": "[variables('splunkTemplateUrl')"
+            "value": "[variables('splunkTemplateUrl')]"
           }
         }
       }
