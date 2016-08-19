@@ -183,7 +183,7 @@
     },
     "templateLocation": {
       "type": "string",
-      "defaultValue": "https://golivearmstorage.blob.core.windows.net/public",
+      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/splunk-on-ubuntu",
       "metadata": {
         "description": "Template file location",
         "artifactsBaseUrl": "Base URL of the Publisher Template gallery package"

@@ -3,55 +3,58 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "value": "westus"
-    },
-    "storageAccountType": {
-      "value": "Standard_LRS"
+      "value": "West US"
     },
     "deploymentType": {
-      "value": "Cluster"
+      "value": "Standalone"
     },
     "standaloneVmSize": {
-      "value": ""
+      "value": "Standard_D3_v2"
     },
     "clusterMasterVmSize": {
       "value": "Standard_D3_v2"
     },
     "clusterSearchheadVmSize": {
-      "value": "Standard_D3_v2"
+      "value": "Standard_D4_v2"
     },
     "clusterIndexerVmSize": {
-      "value": "Standard_D3_v2"
+      "value": "Standard_D3"
     },
     "clusterIndexerVmCount": {
-      "value": 3
+      "value": 10
     },
-    "adminUsername": {
-      "value": "greg"
-    },
-    "adminPassword": {
-      "value": "PepperSalam8"
-    },
-    "splunkAdminPassword": {
-      "value": "PepperSalam8"
+    "domainNamePrefix": {
+      "value": "GEN-UNIQUE-13"
     },
     "virtualNetworkName": {
-      "value": "splunkvnet"
+      "value": "GEN-UNIQUE-10"
     },
-    "virtualNetworkNewOrExisting": {
-      "value": "new"
+    "virtualNetworkNewOrExisting" : {
+      "value" : "new"
     },
     "virtualNetworkExistingRGName": {
-      "value": "default"
+      "value": "GEN-UNIQUE-3"
     },
-    "virtualNetworkAddressPrefix": {
-      "value": "10.0.0.0/16"
+    "storageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "adminUsername": {
+      "value": "splunker"
+    },
+    "adminPassword": {
+      "value": "GEN-PASSWORD"
+    },
+    "splunkAdminPassword": {
+      "value": "GEN-PASSWORD"
     },
     "subnet1Name": {
       "value": "shsubnet"
     },
     "subnet2Name": {
       "value": "idxsubnet"
+    },
+    "virtualNetworkAddressPrefix": {
+      "value": "10.0.0.0/16"
     },
     "subnet1Prefix": {
       "value": "10.0.0.0/24"
@@ -71,14 +74,8 @@
     "forwardedDataFrom": {
       "value": "0.0.0.0/0"
     },
-    "domainNamePrefix": {
-      "value": "golivesplunk"
-    },
     "publicIPName": {
       "value": "splunksh-publicip"
-    },
-    "templateLocation": {
-      "value": "https://golivearmstorage.blob.core.windows.net/public"
     }
   }
 }
