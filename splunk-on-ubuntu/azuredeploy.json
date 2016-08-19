@@ -603,9 +603,6 @@
           "SplunkURL": {
             "value": "none"
           },
-          "automationAccountName": {
-            "value": "none"
-          },
           "automationAccountLocation": {
             "value": "nowhere"
           },
