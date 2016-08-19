@@ -29,8 +29,23 @@
     "subnet": {
       "type": "string"
     },
-    "templateBaseUrl": {
+    "templateNestedUrl": {
       "type": "string"
+    },
+    "templateScriptsUrl": {
+      "type": "string"
+    },
+    "automationAccountName": {
+      "type": "string"
+    },
+    "automationAccountLocation": {
+      "type": "string"
+    },
+    "automationAccountSku": {
+      "type": "string"
+    },
+    "SplunkURL": {
+      "type":"string"
     }
   },
   "variables": {
@@ -38,7 +53,7 @@
     "resourceAPIVersion": "2015-06-15",
     "splunkServerRole": "splunk_cluster_peer",
     "securityGroupName": "[concat(parameters('namespace'), '-nsg')]",
-    "splunkTemplateUrl": "[concat(parameters('templateBaseUrl'), 'splunk-8disk-resources-loop.json')]"
+    "splunkTemplateUrl": "[concat(parameters('templateNestedUrl'), 'splunk-8disk-resources-loop.json')]"
   },
   "resources": [
     {

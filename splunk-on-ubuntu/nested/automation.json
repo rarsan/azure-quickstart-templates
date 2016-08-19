@@ -1,0 +1,265 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "storageSettings": {
+            "type": "object"
+        },
+        "machineSettings": {
+            "type": "object"
+        },
+        "osSettings": {
+            "type": "object"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "string"
+        },
+        "splunkAdminPassword": {
+            "type": "string"
+        },
+        "namespace": {
+            "type": "string"
+        },
+        "subnet": {
+            "type": "string"
+        },
+        "securityGroupName": {
+            "type": "string"
+        },
+        "splunkServerRole": {
+            "type": "string"
+        },
+        "automationRunbookName": {
+            "type": "string"
+        },
+        "automationAccountName": {
+            "type": "string"
+        },
+        "automationAccountLocation": {
+            "type": "string"
+        },
+        "automationAccountSku": {
+            "type": "string"
+        },
+        "templateScriptsUrl": {
+            "type": "string"
+        },
+        "splunkTemplateUrl": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "automationAPIVersion": "2015-10-31"
+    },
+    "resources": [
+        {
+            "name": "[parameters('automationAccountName')]",
+            "type": "Microsoft.Automation/automationAccounts",
+            "apiVersion": "[variables('automationAPIVersion')]",
+            "location": "[parameters('automationAccountLocation')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('automationAccountSku')]"
+                }
+            },
+            "resources": [
+                {
+                    "name": "splunkHA_runbook",
+                    "type": "runbooks",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "properties": {
+                        "logVerbose": false,
+                        "logProcess": true,
+                        "description": "Triggered by availability web test, removes failed CM VM, replaces it.",
+                        "runbookType": "PowerShell",
+                        "publishContentLink": {
+                            "uri": "[concat(parameters('templateScriptsUrl'), parameters('automationRunbookName'))]"
+                        }
+                    }
+                },
+                {
+                    "name": "splunk_resourceGroup",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',resourceGroup().name,'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_templateUri",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',parameters('splunkTemplateUrl'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_location",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('location')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_storageSettings",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('storageSettings')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_machineSettings",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('machineSettings')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_osSettings",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('osSettings')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_adminUsername",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('adminUsername')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_adminPassword",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('adminPassword')),'\"', '\\\"'),'\"')]",
+                        "isEncrypted": true
+                    }
+                },
+                {
+                    "name": "splunk_splunkAdminPassword",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('splunkAdminPassword')),'\"', '\\\"'),'\"')]",
+                        "isEncrypted": true
+                    }
+                },
+                {
+                    "name": "splunk_namespace",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('namespace')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_subnet",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('subnet')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_splunkServerRole",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('splunkServerRole')),'\"', '\\\"'),'\"')]"
+                    }
+                },
+                {
+                    "name": "splunk_securityGroupName",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"',replace(string(parameters('securityGroupName')),'\"', '\\\"'),'\"')]"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}

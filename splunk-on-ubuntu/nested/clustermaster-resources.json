@@ -29,7 +29,22 @@
     "subnet": {
       "type": "string"
     },
-    "templateBaseUrl": {
+    "templateNestedUrl": {
+      "type": "string"
+    },
+    "templateScriptsUrl": {
+      "type": "string"
+    },
+    "automationAccountName": {
+      "type": "string"
+    },
+    "automationAccountLocation": {
+      "type": "string"
+    },
+    "automationAccountSku": {
+      "type": "string"
+    },
+    "SplunkURL": {
       "type": "string"
     }
   },
@@ -38,7 +53,10 @@
     "resourceAPIVersion": "2015-06-15",
     "splunkServerRole": "splunk_cluster_master",
     "securityGroupName": "[concat(parameters('namespace'), '-nsg')]",
-    "splunkTemplateUrl": "[concat(parameters('templateBaseUrl'), 'splunk-2disk-resources.json')]"
+    "splunkTemplateUrl": "[concat(parameters('templateNestedUrl'), 'splunk-2disk-resources.json')]",
+    "automationTemplateUrl": "[concat(parameters('templateNestedUrl'), 'automation.json')]",
+    "insightsTemplateUrl": "[concat(parameters('templateNestedUrl'), 'insights.json')]",
+    "automationRunbookName": "automationRunbook.ps1"
   },
   "resources": [
     {
@@ -153,6 +171,71 @@
           },
           "subnet": {
             "value": "[parameters('subnet')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('templateAPIVersion')]",
+      "type": "Microsoft.Resources/deployments",
+      "name": "automation",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('automationTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "storageSettings": {
+            "value": "[parameters('storageSettings')]"
+          },
+          "machineSettings": {
+            "value": "[parameters('machineSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "splunkAdminPassword": {
+            "value": "[parameters('splunkAdminPassword')]"
+          },
+          "namespace": {
+            "value": "[parameters('namespace')]"
+          },
+          "subnet": {
+            "value": "[parameters('subnet')]"
+          },
+          "securityGroupName": {
+            "value": "[variables('securityGroupName')]"
+          },
+          "splunkServerRole": {
+            "value": "[variables('splunkServerRole')]"
+          },
+          "templateScriptsUrl": {
+            "value": "[parameters('templateScriptsUrl')]"
+          },
+          "automationAccountName": {
+            "value": "[parameters('automationAccountName')]"
+          },
+          "automationAccountLocation": {
+            "value": "[parameters('automationAccountLocation')]"
+          },
+          "automationAccountSku": {
+            "value": "[parameters('automationAccountSku')]"
+          },
+          "automationRunbookName": {
+            "value": "[variables('automationRunbookName')]"
+          },
+          "splunkTemplateUrl": {
+            "value": "[variables('splunkTemplateUrl')"
           }
         }
       }
