@@ -36,7 +36,8 @@
       "type": "string"
     },
     "automationAccountName": {
-      "type":"string"
+      "type":"string",
+      "defaultValue": ""
     },
     "automationAccountLocation":{
       "type":"string"
