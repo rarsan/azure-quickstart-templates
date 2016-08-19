@@ -1,35 +1,57 @@
-﻿$VerbosePreference = "SilentlyContinue"
+﻿"Cluster Manager repair job initializing..."
 
-$conn = Get-AutomationConnection -Name AzureRunAsConnection
-Add-AzureRmAccount `
-    -ServicePrincipal `
-    -Tenant $conn.TenantID -ApplicationId $conn.ApplicationId `
-    -CertificateThumbprint $conn.CertificateThumbprint
+$runningNow = Get-AutomationVariable -Name 'splunk_runningNow'
+if ($runningNow -eq $true) {
+	"Cluster manager repair Job exiting.  Duplicate job already running."
+	exit
+}
+Set-AutomationVariable -Name 'splunk_runningNow' -Value $true
+
+$connectionName = "AzureRunAsConnection"
+try
+{
+    # Get the connection "AzureRunAsConnection "
+    $servicePrincipalConnection=Get-AutomationConnection -Name $connectionName         
+
+    "Logging in to Azure..."
+    Add-AzureRmAccount `
+        -ServicePrincipal `
+        -TenantId $servicePrincipalConnection.TenantId `
+        -ApplicationId $servicePrincipalConnection.ApplicationId `
+        -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint 
+}
+catch {
+	Set-AutomationVariable -Name 'splunk_runningNow' -Value $false
+    if (!$servicePrincipalConnection)
+    {
+        $ErrorMessage = "Connection $connectionName not found."
+        throw $ErrorMessage
+    } else{
+        Write-Error -Message $_.Exception
+        throw $_.Exception
+    }
+}
 
 $rgName = Get-AutomationVariable -Name 'splunk_resourceGroup'
 $templateUri = Get-AutomationVariable -Name 'splunk_templateUri'
 
-$removeVM = $true
+# delete the failed cluster master	
+Remove-AzureRmVM -ResourceGroupName $rgName -Name cm-vm -Force
 
-if ($removeVM) {
-	# delete the failed cluster master	
-	Remove-AzureRmVM -ResourceGroupName $rgName -Name cm-vm -Force
+# remove his vhds
+$accts = Get-AzureRmStorageAccount -ResourceGroupName $rgName
+$acct0 = $accts[0].StorageAccountName
 
-	# remove his vhds
-	$accts = Get-AzureRmStorageAccount -ResourceGroupName $rgName
-	$acct0 = $accts[0].StorageAccountName
+$acctKeys = Get-AzureRmStorageAccountKey -ResourceGroupName $rgName -Name $acct0
+$acctKey = $acctKeys[0].Value
 
-	$acctKeys = Get-AzureRmStorageAccountKey -ResourceGroupName $rgName -Name $acct0
-	$acctKey = $acctKeys[0].Value
+$ctx = New-AzureStorageContext -StorageAccountName $acct0 -StorageAccountKey $acctKey
 
-	$ctx = New-AzureStorageContext -StorageAccountName $acct0 -StorageAccountKey $acctKey
+Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-osdisk.vhd'  -ErrorAction SilentlyContinue
+Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-datadisk1.vhd'  -ErrorAction SilentlyContinue
+Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-datadisk2.vhd'  -ErrorAction SilentlyContinue
 
-	Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-osdisk.vhd'  -ErrorAction SilentlyContinue
-	Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-datadisk1.vhd'  -ErrorAction SilentlyContinue
-	Remove-AzureStorageBlob -Context $ctx -Container vhds -Blob 'cm-vm-datadisk2.vhd'  -ErrorAction SilentlyContinue
-   
-}
-
+# get the ARM template settings from variables established by initial provisioning template
 $machineSettingsString = Get-AutomationVariable -Name 'splunk_machineSettings'
 $osSettingsString = Get-AutomationVariable -Name 'splunk_osSettings'
 $storageSettingsString = Get-AutomationVariable -Name 'splunk_storageSettings'
@@ -74,7 +96,6 @@ $storageSettings = @{
 }
 
 # the rest
-
 $parameters = @{}
 $parameters.Add("location", $locationString)
 $parameters.Add("adminUsername", $adminUsernameString)
@@ -88,10 +109,19 @@ $parameters.Add("osSettings", $osSettings)
 $parameters.Add("machineSettings", $machineSettings)
 $parameters.Add("storageSettings", $storageSettings)
 
-# run the template that adds a new cluster master
-New-AzureRmResourceGroupDeployment `
-	-Mode Incremental `
-	-Name goliveTestingDeployment `
-	-ResourceGroupName $rgName `
-	-TemplateUri $templateUri `
-	-TemplateParameterObject $parameters
+try {
+	# run the template that adds a new cluster master
+	New-AzureRmResourceGroupDeployment `
+		-Mode Incremental `
+		-Name goliveTestingDeployment `
+		-ResourceGroupName $rgName `
+		-TemplateUri $templateUri `
+		-TemplateParameterObject $parameters
+}
+catch {
+	Write-Error -Message $_.Exception
+    throw $_.Exception}
+finally {
+	Set-AutomationVariable -Name 'splunk_runningNow' -Value $false
+}
+

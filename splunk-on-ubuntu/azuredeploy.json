@@ -188,6 +188,13 @@
         "description": "Template file location",
         "artifactsBaseUrl": "Base URL of the Publisher Template gallery package"
       }
+    },
+    "automationAccountName": {
+      "type": "string",
+      "defaultValue": "splunkAutomation",
+      "metadata": {
+        "description": "name of the Azure Automation account created in advance by the user in the Azure portal"
+      }
     }
   },
   "variables": {
@@ -460,7 +467,7 @@
             "value": "[variables('SplunkURL')]"
           },
           "automationAccountName": {
-            "value": "splunkAutomation"
+            "value": "[parameters('automationAccountName')]"
           },
           "automationAccountLocation": {
             "value": "southcentralus"
