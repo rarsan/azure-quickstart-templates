@@ -127,6 +127,6 @@ try {
 }
 catch {
 	Write-Error -Message $_.Exception
-    throw $_.Exception}
+    throw $_.Exception
 }
 
