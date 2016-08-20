@@ -257,6 +257,19 @@
                     "properties": {
                         "value": "[concat('\"',replace(string(parameters('securityGroupName')),'\"', '\\\"'),'\"')]"
                     }
+                },
+                {
+                    "name": "splunk_alertTime",
+                    "type": "variables",
+                    "apiVersion": "[variables('automationAPIVersion')]",
+                    "location": "[parameters('automationAccountLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "value": "[concat('\"','8/19/2016 5:37:33 PM','\"')]"
+                    }
                 }
             ]
         }

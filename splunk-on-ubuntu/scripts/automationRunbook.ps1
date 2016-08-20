@@ -1,11 +1,19 @@
 ﻿"Cluster Manager repair job initializing..."
 
-$runningNow = Get-AutomationVariable -Name 'splunk_runningNow'
-if ($runningNow -eq $true) {
-	"Cluster manager repair Job exiting.  Duplicate job already running."
+# get the time of the alert being processed (or the time of the last one that was processed)
+$alertTime = Get-AutomationVariable -Name 'splunk_alertTime'
+$now = Get-Date
+
+# if alertTime being processed is between now and 20 minutes ago, exit
+if ($now.AddMinutes(-20) -lt $alertTime) {
+	"Redundant alert ignored..."
 	exit
 }
-Set-AutomationVariable -Name 'splunk_runningNow' -Value $true
+
+# still here? new alert, record the time
+Set-AutomationVariable -Name 'splunk_alertTime' -Value $now.ToString()
+
+"Cluster Manager repair job proceeding..."
 
 $connectionName = "AzureRunAsConnection"
 try
@@ -21,7 +29,6 @@ try
         -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint 
 }
 catch {
-	Set-AutomationVariable -Name 'splunk_runningNow' -Value $false
     if (!$servicePrincipalConnection)
     {
         $ErrorMessage = "Connection $connectionName not found."
@@ -121,7 +128,5 @@ try {
 catch {
 	Write-Error -Message $_.Exception
     throw $_.Exception}
-finally {
-	Set-AutomationVariable -Name 'splunk_runningNow' -Value $false
 }
 
