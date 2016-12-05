@@ -29,8 +29,24 @@
     "subnet": {
       "type": "string"
     },
-    "templateBaseUrl": {
+    "templateNestedUrl": {
       "type": "string"
+    },
+    "templateScriptsUrl": {
+      "type": "string"
+    },
+    "automationAccountName": {
+      "type":"string",
+      "defaultValue": ""
+    },
+    "automationAccountLocation":{
+      "type":"string"
+    },
+    "SplunkURL": {
+      "type":"string"
+    },
+    "automationAccountSku":{
+      "type":"string"
     }
   },
   "variables": {},

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.2.2",
+  "contentVersion": "1.2.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -188,16 +188,26 @@
         "description": "Template file location",
         "artifactsBaseUrl": "Base URL of the Publisher Template gallery package"
       }
+    },
+    "automationAccountName": {
+      "type": "string",
+      "defaultValue": "splunkAutomation",
+      "metadata": {
+        "description": "name of the Azure Automation account created in advance by the user in the Azure portal"
+      }
     }
   },
   "variables": {
+    "SplunkURL": "[concat('https://', parameters('domainNamePrefix'), '.', tolower(replace(parameters('location'),' ','')), '.cloudapp.azure.com')]",
     "templateAPIVersion": "2015-01-01",
     "resourceAPIVersion": "2015-06-15",
     "storageAccountNamePrefix": "[concat(uniqueString(resourceGroup().id, deployment().name), 'splunk')]",
     "templateBaseUrl": "[concat(parameters('templateLocation'), '/')]",
-    "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'shared-resources.json')]",
-    "virtualNetworkTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'vnet-', parameters('virtualNetworkNewOrExisting'), '.json')]",
-    "emptyTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'empty-resources.json')]",
+    "templateNestedUrl": "[concat(parameters('templateLocation'), '/nested/')]",
+    "templateScriptsUrl": "[concat(parameters('templateLocation'), '/scripts/')]",
+    "sharedTemplateUrl": "[concat(variables('templateNestedUrl'), 'shared-resources.json')]",
+    "virtualNetworkTemplateUrl": "[concat(variables('templateNestedUrl'), 'vnet-', parameters('virtualNetworkNewOrExisting'), '.json')]",
+    "emptyTemplateUrl": "[concat(variables('templateNestedUrl'), 'empty-resources.json')]",
     "nodesPerStorageAccount": 4,
     "tshirtSizeStandalone": {
       "standaloneVmSize": "[parameters('standaloneVmSize')]",
@@ -205,7 +215,7 @@
       "clusterSearchheadVmSize": "",
       "clusterIndexerVmSize": "",
       "diskSize": 1023,
-      "standaloneTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'standalone-instance-resources.json')]",
+      "standaloneTemplateUrl": "[concat(variables('templateNestedUrl'), 'standalone-instance-resources.json')]",
       "clusterMasterTemplateUrl": "[variables('emptyTemplateUrl')]",
       "clusterSearchheadTemplateUrl": "[variables('emptyTemplateUrl')]",
       "clusterPeersTemplateUrl": "[variables('emptyTemplateUrl')]",
@@ -235,9 +245,9 @@
       "clusterIndexerVmSize": "[parameters('clusterIndexerVmSize')]",
       "diskSize": 1023,
       "standaloneTemplateUrl": "[variables('emptyTemplateUrl')]",
-      "clusterMasterTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'clustermaster-resources.json')]",
-      "clusterSearchheadTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'clustersearchhead-resources.json')]",
-      "clusterPeersTemplateUrl": "[concat(variables('templateBaseUrl'), 'nested/', 'clusterpeers-resources.json')]",
+      "clusterMasterTemplateUrl": "[concat(variables('templateNestedUrl'), 'clustermaster-resources.json')]",
+      "clusterSearchheadTemplateUrl": "[concat(variables('templateNestedUrl'), 'clustersearchhead-resources.json')]",
+      "clusterPeersTemplateUrl": "[concat(variables('templateNestedUrl'), 'clusterpeers-resources.json')]",
       "clusterPeersCount": "[parameters('clusterIndexerVmCount')]",
       "availabilitySetCount": 3,
       "publicIPAddress": {
@@ -309,15 +319,15 @@
         "version": "1.0.9"
       },
       "scripts": [
-        "[concat(variables('templateBaseUrl'), 'scripts/', 'vm-disk-utils-0.1.sh')]",
-        "[concat(variables('templateBaseUrl'), 'scripts/', 'node-setup.sh')]"
+        "[concat(variables('templateScriptsUrl'), 'vm-disk-utils-0.1.sh')]",
+        "[concat(variables('templateScriptsUrl'), 'node-setup.sh')]"
       ]
     },
     "vnetId-new": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
     "vnetId-existing": "[resourceId(parameters('virtualNetworkExistingRGName'),'Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
     "vnetId": "[variables(concat('vnetId-', parameters('virtualNetworkNewOrExisting')))]",
     "subnet1Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet1Name'))]",
-    "subnet2Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet2Name'))]"   
+    "subnet2Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet2Name'))]"
   },
   "resources": [
     {
@@ -381,6 +391,18 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "SplunkURL": {
+            "value": "none"
+          },
+          "automationAccountName": {
+            "value": "none"
+          },
+          "automationAccountLocation": {
+            "value": "nowhere"
+          },
+          "automationAccountSku": {
+            "value": "free"
+          },
           "namespace": {
             "value": "standalone"
           },
@@ -417,8 +439,11 @@
           "subnet": {
             "value": "[variables('subnet1Ref')]"
           },
-          "templateBaseUrl": {
-            "value": "[concat(variables('templateBaseUrl'), 'nested/')]"
+          "templateNestedUrl": {
+            "value": "[variables('templateNestedUrl')]"
+          },
+          "templateScriptsUrl": {
+            "value": "[variables('templateScriptsUrl')]"
           }
         }
       }
@@ -438,6 +463,18 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "SplunkURL": {
+            "value": "[variables('SplunkURL')]"
+          },
+          "automationAccountName": {
+            "value": "[parameters('automationAccountName')]"
+          },
+          "automationAccountLocation": {
+            "value": "southcentralus"
+          },
+          "automationAccountSku": {
+            "value": "free"
+          },
           "namespace": {
             "value": "cm"
           },
@@ -473,8 +510,11 @@
           "subnet": {
             "value": "[variables('subnet2Ref')]"
           },
-          "templateBaseUrl": {
-            "value": "[concat(variables('templateBaseUrl'), 'nested/')]"
+          "templateNestedUrl": {
+            "value": "[variables('templateNestedUrl')]"
+          },
+          "templateScriptsUrl": {
+            "value": "[variables('templateScriptsUrl')]"
           }
         }
       }
@@ -495,6 +535,18 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "SplunkURL": {
+            "value": "none"
+          },
+          "automationAccountName": {
+            "value": "none"
+          },
+          "automationAccountLocation": {
+            "value": "nowhere"
+          },
+          "automationAccountSku": {
+            "value": "free"
+          },
           "namespace": {
             "value": "csh"
           },
@@ -530,8 +582,11 @@
           "subnet": {
             "value": "[variables('subnet1Ref')]"
           },
-          "templateBaseUrl": {
-            "value": "[concat(variables('templateBaseUrl'), 'nested/')]"
+          "templateNestedUrl": {
+            "value": "[variables('templateNestedUrl')]"
+          },
+          "templateScriptsUrl": {
+            "value": "[variables('templateScriptsUrl')]"
           }
         }
       }
@@ -552,6 +607,18 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "SplunkURL": {
+            "value": "none"
+          },
+          "automationAccountName": {
+            "value": "none"
+          },
+          "automationAccountLocation": {
+            "value": "nowhere"
+          },
+          "automationAccountSku": {
+            "value": "free"
+          },
           "namespace": {
             "value": "cp"
           },
@@ -589,8 +656,11 @@
           "subnet": {
             "value": "[variables('subnet2Ref')]"
           },
-          "templateBaseUrl": {
-            "value": "[concat(variables('templateBaseUrl'), 'nested/')]"
+          "templateNestedUrl": {
+            "value": "[variables('templateNestedUrl')]"
+          },
+          "templateScriptsUrl": {
+            "value": "[variables('templateScriptsUrl')]"
           }
         }
       }
@@ -598,7 +668,7 @@
   ],
   "outputs": {
     "SplunkURL": {
-      "value": "[concat('https://', parameters('domainNamePrefix'), '.', tolower(replace(parameters('location'),' ','')), '.cloudapp.azure.com')]",
+      "value": "[variables('SplunkURL')]",
       "type": "string"
     }
   }
