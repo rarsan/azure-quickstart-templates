@@ -125,7 +125,7 @@
               "diskSizeGB": "[parameters('machineSettings').diskSize]",
               "lun": 0,
               "vhd": {
-                "Uri": "[concat('http://', parameters('storageSettings').name, parameters('storageSettings').map[copyindex()], '.blob.core.windows.net/vhds/', variables('vmName'), copyindex(), '-datadisk1.vhd')]"
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageSettings').name, parameters('storageSettings').map[copyindex()]), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, 'vhds/', variables('vmName'), copyindex(), '-datadisk1.vhd')]"
               },
               "caching": "ReadOnly",
               "createOption": "Empty"
@@ -135,7 +135,7 @@
               "diskSizeGB": "[parameters('machineSettings').diskSize]",
               "lun": 1,
               "vhd": {
-                "Uri": "[concat('http://', parameters('storageSettings').name, parameters('storageSettings').map[copyindex()], '.blob.core.windows.net/vhds/', variables('vmName'), copyindex(), '-datadisk2.vhd')]"
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageSettings').name, parameters('storageSettings').map[copyindex()]), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, 'vhds/', variables('vmName'), copyindex(), '-datadisk2.vhd')]"
               },
               "caching": "ReadOnly",
               "createOption": "Empty"
@@ -166,9 +166,10 @@
         "count": "[variables('vmCount')]"
       },
       "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.5",
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": "[parameters('osSettings').scripts]"
         },
